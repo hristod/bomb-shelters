@@ -40,7 +40,7 @@ export default function BottomSheet({ children, snapPoint, onSnapChange }: Botto
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 bg-slate-50 rounded-t-2xl shadow-[0_-4px_20px_rgba(0,0,0,0.1)] transition-[height] duration-300 ease-out z-[1000] flex flex-col md:hidden"
+      className="fixed bottom-[68px] left-0 right-0 bg-slate-50 rounded-t-2xl shadow-[0_-4px_20px_rgba(0,0,0,0.1)] transition-[height] duration-300 ease-out z-[1000] flex flex-col md:hidden"
       style={{ height }}
     >
       <div

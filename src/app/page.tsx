@@ -6,6 +6,7 @@ import { shelters } from "@/lib/shelters";
 import ShelterList from "@/components/ShelterList";
 import BottomSheet, { SNAP_COLLAPSED, SNAP_HALF } from "@/components/BottomSheet";
 import LanguageToggle from "@/components/LanguageToggle";
+import NavigateButton from "@/components/NavigateButton";
 
 const Map = dynamic(() => import("@/components/Map"), { ssr: false });
 
@@ -48,6 +49,9 @@ export default function Home() {
           <LanguageToggle />
         </div>
         <ShelterList {...listProps} onSelectShelter={setSelectedShelter} />
+        <div className="p-4 border-t border-slate-200">
+          <NavigateButton />
+        </div>
       </aside>
 
       {/* Map */}
@@ -61,6 +65,11 @@ export default function Home() {
           onMarkerClick={handleMarkerClick}
         />
       </main>
+
+      {/* Mobile navigate button */}
+      <div className="fixed bottom-0 left-0 right-0 z-[999] p-3 md:hidden">
+        <NavigateButton />
+      </div>
 
       {/* Mobile bottom sheet */}
       <BottomSheet snapPoint={snapPoint} onSnapChange={setSnapPoint}>
