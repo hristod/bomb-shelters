@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import { Shelter } from "@/types/shelter";
 import { useI18n } from "@/lib/i18n";
+import { useUserback } from "@/lib/userback";
 import { useEffect } from "react";
 
 const defaultIcon = L.icon({
@@ -33,6 +34,7 @@ interface MapProps {
 
 export default function Map({ shelters, selectedShelter, onMarkerClick }: MapProps) {
   const { t } = useI18n();
+  const userback = useUserback();
 
   return (
     <MapContainer
@@ -59,6 +61,25 @@ export default function Map({ shelters, selectedShelter, onMarkerClick }: MapPro
               <p className="text-slate-500">{shelter.address}</p>
               <p className="mt-1">{t("type")}: {shelter.type}</p>
               <p>{t("condition")}: {shelter.category}</p>
+              {userback && (
+                <button
+                  className="mt-2 text-xs text-orange-500 hover:text-orange-600 underline cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    userback.setData({
+                      shelter_id: String(shelter.id),
+                      shelter_name: shelter.name,
+                      shelter_address: shelter.address,
+                      shelter_region: shelter.region,
+                      lat: String(shelter.lat),
+                      lng: String(shelter.lng),
+                    });
+                    userback.open("bug", "form");
+                  }}
+                >
+                  {t("reportProblem")}
+                </button>
+              )}
             </div>
           </Popup>
         </Marker>
