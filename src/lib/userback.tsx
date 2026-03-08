@@ -1,20 +1,44 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import UserbackModule from "@userback/widget";
-import type { UserbackWidget } from "@userback/widget";
 
-const UserbackContext = createContext<UserbackWidget | null>(null);
+interface UserbackInstance {
+  setData: (data: Record<string, string>) => void;
+  open: (type: string, mode: string) => void;
+}
+
+declare global {
+  interface Window {
+    Userback?: UserbackInstance;
+  }
+}
+
+const UserbackContext = createContext<UserbackInstance | null>(null);
 
 export function UserbackProvider({ children }: { children: ReactNode }) {
-  const [userback, setUserback] = useState<UserbackWidget | null>(null);
+  const [userback, setUserback] = useState<UserbackInstance | null>(null);
 
   useEffect(() => {
     const token = process.env.NEXT_PUBLIC_USERBACK_TOKEN;
     if (!token) return;
-    UserbackModule(token).then(setUserback).catch((err) => {
-      console.error("[Userback] Init failed:", err);
-    });
+
+    // Script tag approach matching Userback's verification
+    (window as any).Userback = (window as any).Userback || {};
+    (window as any).Userback.access_token = token;
+
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = "https://static.userback.io/widget/v1.js";
+    script.onload = () => {
+      if (window.Userback) {
+        setUserback(window.Userback);
+      }
+    };
+    document.head.appendChild(script);
+
+    return () => {
+      document.head.removeChild(script);
+    };
   }, []);
 
   return (
