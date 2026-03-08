@@ -19,7 +19,7 @@ export function UserbackProvider({ children }: { children: ReactNode }) {
   const [userback, setUserback] = useState<UserbackInstance | null>(null);
 
   useEffect(() => {
-    const token = process.env.NEXT_PUBLIC_USERBACK_TOKEN;
+    const token = process.env.NEXT_PUBLIC_USERBACK_TOKEN?.trim();
     if (!token) return;
 
     // Script tag approach matching Userback's verification
