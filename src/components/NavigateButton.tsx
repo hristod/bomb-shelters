@@ -1,41 +1,47 @@
 "use client";
 import { Navigation } from "lucide-react";
+import { Shelter } from "@/types/shelter";
 import { useI18n } from "@/lib/i18n";
-import { useGeolocation } from "@/lib/useGeolocation";
-import { findClosestShelter, getNavigationUrl } from "@/lib/geo-utils";
-import { shelters } from "@/lib/shelters";
+import {
+  getCurrentPosition,
+  findClosestShelter,
+  getNavigationUrl,
+} from "@/lib/geolocation";
 
-export default function NavigateButton() {
+interface NavigateButtonProps {
+  shelters: Shelter[];
+}
+
+export default function NavigateButton({ shelters }: NavigateButtonProps) {
   const { t } = useI18n();
-  const { lat, lng, error, loading, requestLocation } = useGeolocation();
 
-  const handleClick = () => {
-    if (lat !== null && lng !== null) {
-      const closest = findClosestShelter(lat, lng, shelters);
-      if (closest) {
-        const url = getNavigationUrl(lat, lng, closest.lat, closest.lng);
-        window.open(url, "_blank", "noopener");
+  const handleClick = async () => {
+    try {
+      const pos = await getCurrentPosition();
+      const { latitude, longitude } = pos.coords;
+      const closest = findClosestShelter(latitude, longitude, shelters);
+      const url = getNavigationUrl(latitude, longitude, closest.lat, closest.lng);
+      window.open(url, "_blank");
+    } catch (err) {
+      if (
+        err instanceof GeolocationPositionError &&
+        err.code === err.PERMISSION_DENIED
+      ) {
+        alert(t("locationRequired"));
+      } else {
+        alert(t("locationUnavailable"));
       }
-      return;
     }
-
-    if (error) {
-      alert(t("locationRequired"));
-      return;
-    }
-
-    requestLocation();
   };
 
   return (
     <button
       onClick={handleClick}
-      disabled={loading}
-      className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold text-lg rounded-xl shadow-lg transition-colors duration-150 cursor-pointer disabled:opacity-70 disabled:cursor-wait min-h-[56px] md:min-h-[48px] px-4 py-3 focus:outline-none focus:ring-4 focus:ring-red-300"
-      aria-label={t("navigateToShelter")}
+      className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold text-lg py-4 px-6 rounded-lg shadow-lg transition-colors duration-200 cursor-pointer min-h-[56px] focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2"
+      aria-label={t("navigateToNearest")}
     >
       <Navigation className="w-5 h-5" />
-      {loading ? t("locating") : t("navigateToShelter")}
+      {t("navigateToNearest")}
     </button>
   );
 }
