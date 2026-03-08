@@ -26,13 +26,24 @@ function FlyToMarker({ shelter }: { shelter: Shelter | null }) {
   return null;
 }
 
+function FlyToLocation({ location }: { location: [number, number] | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (location) {
+      map.flyTo(location, 14, { duration: 1 });
+    }
+  }, [location, map]);
+  return null;
+}
+
 interface MapProps {
   shelters: Shelter[];
   selectedShelter: Shelter | null;
   onMarkerClick: (shelter: Shelter) => void;
+  flyToLocation: [number, number] | null;
 }
 
-export default function Map({ shelters, selectedShelter, onMarkerClick }: MapProps) {
+export default function Map({ shelters, selectedShelter, onMarkerClick, flyToLocation }: MapProps) {
   const { t } = useI18n();
   const userback = useUserback();
 
@@ -48,9 +59,10 @@ export default function Map({ shelters, selectedShelter, onMarkerClick }: MapPro
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <FlyToMarker shelter={selectedShelter} />
-      {shelters.map((shelter) => (
+      <FlyToLocation location={flyToLocation} />
+      {shelters.map((shelter, index) => (
         <Marker
-          key={shelter.id}
+          key={index}
           position={[shelter.lat, shelter.lng]}
           icon={defaultIcon}
           eventHandlers={{ click: () => onMarkerClick(shelter) }}

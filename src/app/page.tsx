@@ -19,6 +19,7 @@ export default function Home() {
         shelters={shelters}
         selectedShelter={selectedShelter}
         onMarkerClick={setSelectedShelter}
+        flyToLocation={null}
       />
     </div>
   );
