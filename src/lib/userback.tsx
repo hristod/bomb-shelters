@@ -12,7 +12,9 @@ export function UserbackProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const token = process.env.NEXT_PUBLIC_USERBACK_TOKEN;
     if (!token) return;
-    UserbackModule(token).then(setUserback).catch(() => {});
+    UserbackModule(token).then(setUserback).catch((err) => {
+      console.error("[Userback] Init failed:", err);
+    });
   }, []);
 
   return (
