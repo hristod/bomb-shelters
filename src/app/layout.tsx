@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { Providers } from "./providers";
 
@@ -15,6 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="bg">
       <body className={`${inter.className} bg-slate-50 text-slate-700`}>
         <Providers>{children}</Providers>
+        <Analytics />
       </body>
     </html>
   );
