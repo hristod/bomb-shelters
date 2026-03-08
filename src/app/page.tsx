@@ -14,7 +14,7 @@ export default function Home() {
   const [flyToLocation, setFlyToLocation] = useState<[number, number] | null>(null);
 
   return (
-    <div className="h-screen relative">
+    <div className="h-dvh relative">
       <div className="absolute top-4 right-4 z-[1000]">
         <LanguageToggle />
       </div>
@@ -24,10 +24,11 @@ export default function Home() {
         onMarkerClick={setSelectedShelter}
         flyToLocation={flyToLocation}
       />
-      <div className="absolute bottom-4 right-4 z-[1000]">
+      <div
+        className="absolute left-4 right-4 z-[1000] flex flex-col items-end gap-3"
+        style={{ bottom: "calc(1rem + env(safe-area-inset-bottom, 0px))" }}
+      >
         <CenterMapButton onLocate={setFlyToLocation} />
-      </div>
-      <div className="absolute bottom-4 left-4 right-16 z-[1000]">
         <NavigateButton shelters={shelters} />
       </div>
     </div>

@@ -14,6 +14,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="bg">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+      </head>
       <body className={`${inter.className} bg-slate-50 text-slate-700`}>
         <Providers>{children}</Providers>
         <Analytics />

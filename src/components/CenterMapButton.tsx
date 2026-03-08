@@ -14,8 +14,9 @@ export default function CenterMapButton({ onLocate }: CenterMapButtonProps) {
     try {
       const pos = await getCurrentPosition();
       onLocate([pos.coords.latitude, pos.coords.longitude]);
-    } catch (err) {
-      if (err instanceof GeolocationPositionError && err.code === err.PERMISSION_DENIED) {
+    } catch (err: unknown) {
+      const geoErr = err as { code?: number };
+      if (geoErr.code === 1) {
         alert(t("locationRequired"));
       } else {
         alert(t("locationUnavailable"));
