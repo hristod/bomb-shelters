@@ -11,6 +11,11 @@ export const translations = {
     locationUnavailable: "Местоположението не е налично. Моля, опитайте отново.",
     searchPlaceholder: "Търсене на адрес...",
     addressNotFound: "Адресът не е намерен",
+    betaBanner: "Бета версия — данните може да съдържат неточности",
+    betaModalTitle: "Бета версия",
+    betaModalBody: "Данните за местоположенията са базирани на официална информация от МВР. Създателите на сайта не носят отговорност за неточности в локациите. Ако забележите грешка, моля докладвайте я — ще бъде коригирана възможно най-скоро, но може да отнеме време, тъй като проектът се поддържа от един разработчик.",
+    betaModalSource: "Източник на данните",
+    betaModalDismiss: "Разбрах",
   },
   en: {
     title: "Bomb Shelters in Bulgaria",
@@ -24,6 +29,11 @@ export const translations = {
     locationUnavailable: "Location unavailable. Please try again.",
     searchPlaceholder: "Search address...",
     addressNotFound: "Address not found",
+    betaBanner: "Beta — data may contain inaccuracies",
+    betaModalTitle: "Beta version",
+    betaModalBody: "Location data is based on official information from the Bulgarian Ministry of Interior (МВР). The website creators are not responsible for inaccurate locations. If you spot an inconsistency, please report it — it will be addressed ASAP, but may take time as this project is maintained by a single developer.",
+    betaModalSource: "Data source",
+    betaModalDismiss: "Got it",
   },
 } as const;
 
