@@ -6,6 +6,7 @@ import { shelters } from "@/lib/shelters";
 import LanguageToggle from "@/components/LanguageToggle";
 import NavigateButton from "@/components/NavigateButton";
 import CenterMapButton from "@/components/CenterMapButton";
+import SearchButton from "@/components/SearchButton";
 
 const Map = dynamic(() => import("@/components/Map"), { ssr: false });
 
@@ -15,6 +16,9 @@ export default function Home() {
 
   return (
     <div className="h-dvh relative">
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000]">
+        <SearchButton onSearch={setFlyToLocation} />
+      </div>
       <div className="absolute top-4 right-4 z-[1000]">
         <LanguageToggle />
       </div>

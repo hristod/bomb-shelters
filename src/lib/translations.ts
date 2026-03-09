@@ -9,6 +9,8 @@ export const translations = {
     navigateToNearest: "Най-близко убежище",
     locationRequired: "Необходим е достъп до местоположението, за да намерим най-близкото убежище.",
     locationUnavailable: "Местоположението не е налично. Моля, опитайте отново.",
+    searchPlaceholder: "Търсене на адрес...",
+    addressNotFound: "Адресът не е намерен",
   },
   en: {
     title: "Bomb Shelters in Bulgaria",
@@ -20,6 +22,8 @@ export const translations = {
     navigateToNearest: "Nearest shelter",
     locationRequired: "Location access is required to find the nearest shelter.",
     locationUnavailable: "Location unavailable. Please try again.",
+    searchPlaceholder: "Search address...",
+    addressNotFound: "Address not found",
   },
 } as const;
 
