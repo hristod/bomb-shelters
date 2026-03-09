@@ -1,86 +1,53 @@
-"""Geocode shelter addresses via Nominatim (OpenStreetMap).
+"""Geocode shelter addresses via Google Maps Geocoding API.
 
-Uses structured queries with fallback:
-1. Try street + city (structured query)
-2. Try city only (fallback for failed street lookups)
+Reads shelters-raw.json (no coords), writes public/data/shelters.json (with coords).
+Logs match quality for each entry.
 """
 import json
-import re
+import sys
 import time
 import urllib.request
 import urllib.parse
-import sys
 
 INPUT = "data/shelters-raw.json"
-OUTPUT = "data/shelters.json"
-NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
-HEADERS = {"User-Agent": "BombSheltersBulgaria/1.0"}
+OUTPUT = "public/data/shelters.json"
+API_KEY = "AIzaSyAc9yE2lL2t2i7anirPDjAhBFQhYxuEsn8"
+GEOCODE_URL = "https://maps.googleapis.com/maps/api/geocode/json"
 
 
-def parse_address(address: str) -> tuple[str, str]:
-    """Extract city and street from Bulgarian address format."""
-    city_match = re.match(r"(?:гр\.|с\.)\s*([^,]+)", address)
-    city = city_match.group(1).strip() if city_match else ""
+def geocode(address: str, region: str) -> tuple[float | None, float | None, str]:
+    """Geocode an address using Google Maps API.
 
-    street_match = re.search(
-        r"(?:ул\.|бул\.|пл\.|ж\.к\.)\s*([^,№]+?)(?:,\s*№\s*(\S+))?(?:,|$)",
-        address,
-    )
-    if street_match:
-        street_name = street_match.group(1).strip().strip('"')
-        number = street_match.group(2) or ""
-        if number in ("0", "/0/", ""):
-            street = street_name
-        else:
-            street = f"{street_name} {number}"
-    else:
-        street = ""
+    Returns (lat, lng, location_type) where location_type is one of:
+    ROOFTOP, RANGE_INTERPOLATED, GEOMETRIC_CENTER, APPROXIMATE, or FAILED.
+    """
+    full_address = f"{address}, {region}, Bulgaria"
 
-    return city, street
-
-
-def geocode_structured(city: str, street: str = "") -> tuple[float | None, float | None]:
-    """Query Nominatim with structured parameters."""
-    params: dict[str, str] = {
-        "format": "json",
-        "limit": "1",
-        "countrycodes": "bg",
+    params = {
+        "address": full_address,
+        "key": API_KEY,
+        "language": "bg",
     }
-    if city:
-        params["city"] = city
-    if street:
-        params["street"] = street
 
-    url = f"{NOMINATIM_URL}?{urllib.parse.urlencode(params)}"
-    req = urllib.request.Request(url, headers=HEADERS)
+    url = f"{GEOCODE_URL}?{urllib.parse.urlencode(params)}"
+    req = urllib.request.Request(url)
+
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
             data = json.loads(resp.read())
-            if data:
-                return float(data[0]["lat"]), float(data[0]["lon"])
+
+            if data["status"] == "OK" and data["results"]:
+                result = data["results"][0]
+                loc = result["geometry"]["location"]
+                loc_type = result["geometry"]["location_type"]
+                return loc["lat"], loc["lng"], loc_type
+
+            print(f"  API status: {data['status']}", file=sys.stderr)
+            return None, None, "FAILED"
+
     except Exception as e:
         print(f"  Error: {e}", file=sys.stderr)
-    return None, None
-
-
-def geocode_shelter(address: str) -> tuple[float | None, float | None, str]:
-    """Geocode with fallback: street-level -> city-level."""
-    city, street = parse_address(address)
-
-    if not city:
-        return None, None, "no_city"
-
-    if street:
-        lat, lng = geocode_structured(city, street)
-        if lat is not None:
-            return lat, lng, "street"
-        time.sleep(1)
-
-    lat, lng = geocode_structured(city)
-    if lat is not None:
-        return lat, lng, "city"
-
-    return None, None, "failed"
+        return None, None, "FAILED"
 
 
 def main():
@@ -88,36 +55,44 @@ def main():
         shelters = json.load(f)
 
     total = len(shelters)
-    stats = {"street": 0, "city": 0, "failed": 0}
+    stats: dict[str, int] = {}
 
     for i, shelter in enumerate(shelters):
-        print(f"[{i+1}/{total}] {shelter['address'][:60]}...", file=sys.stderr)
-        lat, lng, method = geocode_shelter(shelter["address"])
+        addr_preview = shelter["address"][:60]
+        print(f"[{i+1}/{total}] {addr_preview}...", file=sys.stderr)
+
+        lat, lng, loc_type = geocode(shelter["address"], shelter["region"])
         shelter["lat"] = lat
         shelter["lng"] = lng
 
-        if method == "street":
-            stats["street"] += 1
-        elif method == "city":
-            stats["city"] += 1
-            print(f"  -> city-level fallback", file=sys.stderr)
-        else:
-            stats["failed"] += 1
-            print(f"  FAILED", file=sys.stderr)
+        stats[loc_type] = stats.get(loc_type, 0) + 1
 
+        if loc_type == "FAILED":
+            print(f"  FAILED: {shelter['name']}", file=sys.stderr)
+        elif loc_type == "APPROXIMATE":
+            print(f"  APPROXIMATE: {shelter['name']}", file=sys.stderr)
+
+        # Save progress every 10 entries
         if (i + 1) % 10 == 0:
             with open(OUTPUT, "w", encoding="utf-8") as f:
                 json.dump(shelters, f, ensure_ascii=False, indent=2)
 
-        time.sleep(1)
+        # Respect rate limits
+        time.sleep(0.1)
 
+    # Final save
     with open(OUTPUT, "w", encoding="utf-8") as f:
         json.dump(shelters, f, ensure_ascii=False, indent=2)
 
-    print(f"\nDone:", file=sys.stderr)
-    print(f"  Street-level: {stats['street']}", file=sys.stderr)
-    print(f"  City-level:   {stats['city']}", file=sys.stderr)
-    print(f"  Failed:       {stats['failed']}", file=sys.stderr)
+    print(f"\nDone! Geocoded {total} shelters:", file=sys.stderr)
+    for k, v in sorted(stats.items()):
+        print(f"  {k}: {v}", file=sys.stderr)
+
+    failed = [s for s in shelters if s["lat"] is None]
+    if failed:
+        print(f"\nFailed entries ({len(failed)}):", file=sys.stderr)
+        for s in failed:
+            print(f"  - {s['name']}: {s['address']}", file=sys.stderr)
 
 
 if __name__ == "__main__":

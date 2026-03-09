@@ -3,7 +3,6 @@ export interface Shelter {
   name: string;
   address: string;
   region: string;
-  municipality: string;
   operator: string;
   type: string;
   category: string;
