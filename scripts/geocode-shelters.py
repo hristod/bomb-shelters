@@ -4,6 +4,7 @@ Reads shelters-raw.json (no coords), writes public/data/shelters.json (with coor
 Logs match quality for each entry.
 """
 import json
+import os
 import sys
 import time
 import urllib.request
@@ -11,7 +12,7 @@ import urllib.parse
 
 INPUT = "data/shelters-raw.json"
 OUTPUT = "public/data/shelters.json"
-API_KEY = "AIzaSyAc9yE2lL2t2i7anirPDjAhBFQhYxuEsn8"
+API_KEY = os.environ.get("GOOGLE_GEOCODING_API_KEY", "")
 GEOCODE_URL = "https://maps.googleapis.com/maps/api/geocode/json"
 
 
@@ -51,6 +52,10 @@ def geocode(address: str, region: str) -> tuple[float | None, float | None, str]
 
 
 def main():
+    if not API_KEY:
+        print("Error: Set GOOGLE_GEOCODING_API_KEY environment variable", file=sys.stderr)
+        sys.exit(1)
+
     with open(INPUT, encoding="utf-8") as f:
         shelters = json.load(f)
 
